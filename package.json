@@ -6,8 +6,7 @@
   "main": "api/analyze.js",
   "scripts": {
     "start": "node dev-server.js",
-    "dev": "node dev-server.js",
-    "build": "echo 'Build complete'"
+    "dev": "node dev-server.js"
   },
   "keywords": [
     "sentiment-analysis",
@@ -26,4 +25,3 @@
     "openai": "^4.86.1"
   }
 }
-
