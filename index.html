@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moodline — AI 문장 감성 분석</title>
+  <meta name="description" content="사용자가 입력한 문장의 긍정, 부정, 중립 감성을 AI로 빠르고 정확하게 분석하는 서비스입니다.">
+  <link rel="stylesheet" href="public/css/styles.css">
+</head>
+<body>
+  <!-- 사이트 배경에서 연출되는 대형 폭죽, 빗줄기, 별빛 애니메이션 캔버스 -->
+  <canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="header">
+    <div class="header-container">
+      <a href="#" class="logo" aria-label="Moodline 홈">moodline<span class="logo-dot">.</span></a>
+      <nav class="nav">
+        <a href="#analysis-section" class="nav-link">분석하기</a>
+        <a href="#guide-section" class="nav-link">서비스 안내</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 콘텐츠 영역 -->
+  <main class="main">
+    <!-- 히어로 섹션 (대형 타이포그래피 및 시각 효과) -->
+    <section class="hero-section" aria-labelledby="hero-title">
+      <div class="hero-container">
+        <p class="hero-badge">AI SENTIMENT ANALYZER</p>
+        <h1 id="hero-title" class="hero-title">
+          <span class="hero-line solid">READ THE FEELING</span>
+          <span class="hero-line outline" aria-hidden="true">BEHIND YOUR WORDS</span>
+          <span class="sr-only">BEHIND YOUR WORDS</span>
+        </h1>
+        <p class="hero-description">
+          문장 속에 담긴 마음의 결을 읽어냅니다.<br>
+          한국어와 영어 문장을 입력하면 인공지능이 긍정, 부정, 중립 감성을 즉시 분석합니다.
+        </p>
+      </div>
+    </section>
+
+    <!-- 감성 분석 입력 폼 섹션 -->
+    <section id="analysis-section" class="analyzer-section" aria-labelledby="analyzer-title">
+      <div class="analyzer-container">
+        <h2 id="analyzer-title" class="sr-only">감성 분석 요청 양식</h2>
+
+        <!-- 빠른 테스트를 위한 예시 문장 추천 태그 -->
+        <div class="sample-tags-wrap" aria-label="예시 문장 추천">
+          <span class="sample-tags-label">예시 문장:</span>
+          <button type="button" class="sample-tag-btn" data-type="positive">😊 긍정 예시</button>
+          <button type="button" class="sample-tag-btn" data-type="negative">😔 부정 예시</button>
+          <button type="button" class="sample-tag-btn" data-type="neutral">😐 중립 예시</button>
+        </div>
+
+        <form id="sentiment-form" class="sentiment-form" novalidate>
+          <div class="input-header">
+            <label for="sentence-input" class="input-label">분석할 문장 입력</label>
+            <div class="char-counter" aria-live="polite">
+              <span id="char-count">0</span> / <span id="char-max">2000</span>자
+            </div>
+          </div>
+
+          <div class="textarea-wrapper">
+            <textarea
+              id="sentence-input"
+              name="text"
+              class="sentence-textarea"
+              placeholder="예: 오늘 하루도 정말 수고 많았고 보람찬 하루였어! (최대 2000자)"
+              maxlength="2000"
+              rows="5"
+              required
+              aria-describedby="input-hint error-message"
+            ></textarea>
+          </div>
+
+          <p id="input-hint" class="input-hint">
+            * 여러 줄의 문장이나 후기, 일기 등 자유롭게 입력하실 수 있습니다.
+          </p>
+
+          <!-- 오류 안내 메시지 영역 -->
+          <div id="error-box" class="error-box hidden" role="alert" aria-live="assertive">
+            <span class="error-icon" aria-hidden="true">⚠️</span>
+            <span id="error-message" class="error-text"></span>
+          </div>
+
+          <!-- 제출 버튼 -->
+          <div class="form-actions">
+            <button type="submit" id="submit-btn" class="submit-button">
+              <span class="button-text">감성 분석하기</span>
+              <span class="spinner hidden" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+
+        <!-- 분석 결과 표시 영역 -->
+        <section id="result-box" class="result-box hidden" aria-labelledby="result-title" aria-live="polite">
+          <div class="result-header">
+            <div class="result-header-left">
+              <span class="result-subtitle">분석 결과</span>
+              <span id="result-time" class="result-time"></span>
+            </div>
+            <!-- 결과 복사 버튼 -->
+            <button type="button" id="copy-btn" class="copy-button" aria-label="분석 결과 복사">
+              <span class="copy-icon">📋</span>
+              <span class="copy-text">결과 복사</span>
+            </button>
+          </div>
+
+          <!-- 감정 라벨 및 아이콘 -->
+          <div class="result-main">
+            <div class="sentiment-badge-wrap">
+              <span id="sentiment-icon" class="sentiment-icon" aria-hidden="true">✨</span>
+              <h3 id="result-title" class="sentiment-label">분석 대기 중</h3>
+            </div>
+            
+            <!-- 모델 추정 신뢰도 영역 -->
+            <div class="confidence-wrap">
+              <div class="confidence-info">
+                <span class="confidence-label">모델 추정 신뢰도</span>
+                <span id="confidence-value" class="confidence-number">0%</span>
+              </div>
+              <div class="confidence-bar-bg" role="progressbar" id="confidence-bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="모델 추정 신뢰도">
+                <div id="confidence-bar-fill" class="confidence-bar-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 분석 근거 및 이유 -->
+          <div class="result-reason-card">
+            <h4 class="reason-title">분석 이유</h4>
+            <p id="result-reason" class="reason-text"></p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- 서비스 안내 섹션 -->
+    <section id="guide-section" class="guide-section" aria-labelledby="guide-title">
+      <div class="guide-container">
+        <h2 id="guide-title" class="guide-title">서비스 이용 안내</h2>
+        <div class="guide-grid">
+          <div class="guide-card">
+            <h3>3단계 감성 분류</h3>
+            <p>긍정(Positive), 부정(Negative), 중립(Neutral)으로 명확히 구분하여 전달합니다.</p>
+          </div>
+          <div class="guide-card">
+            <h3>근거 중심의 이유</h3>
+            <p>문장에 실제로 등장하는 어휘와 문맥을 바탕으로 인공지능이 분석한 이유를 제시합니다.</p>
+          </div>
+          <div class="guide-card">
+            <h3>신뢰도 지표 안내</h3>
+            <p>표시되는 신뢰도는 AI 모델의 자체 추정 점수이며, 통계적 절대 확률을 의미하지 않습니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 하단 푸터 -->
+  <footer class="footer">
+    <div class="footer-container">
+      <p class="footer-notice">
+        AI 분석 결과는 문맥과 뉘앙스에 따라 차이가 있을 수 있으므로 참고용으로 활용해 주세요.<br>
+        서비스 품질 개선을 위해 입력하신 문장과 분석 결과는 서버에 안전하게 기록될 수 있습니다.
+      </p>
+      <p class="footer-copyright">
+        &copy; 2026 Moodline. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <!-- 프론트엔드 애플리케이션 스크립트 -->
+  <script type="module" src="public/js/app.js"></script>
+</body>
+</html>

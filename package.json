@@ -1,0 +1,29 @@
+{
+  "name": "moodline",
+  "version": "1.0.0",
+  "description": "AI 기반 한국어 및 영어 문장 감성 분석 웹 서비스 (Moodline)",
+  "type": "module",
+  "main": "api/analyze.js",
+  "scripts": {
+    "start": "node dev-server.js",
+    "dev": "node dev-server.js",
+    "build": "echo 'Build complete'"
+  },
+  "keywords": [
+    "sentiment-analysis",
+    "openai",
+    "supabase",
+    "vercel"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "dotenv": "^16.4.7",
+    "openai": "^4.86.1"
+  }
+}
+
